@@ -123,11 +123,11 @@ img.save("multicolored_stimulus.png")
 ### 1. Outline Displays (Reference Matching)
 White background displays bounded by alternating convex/concave edge outlines with a red probe square, matching the experimental stimuli in Peterson & Salvagio (2008).
 
-| Condition | Image |
+| Condition | Sample Image |
 | :--- | :--- |
-| **8 Regions (7 Lobes)** | ![Match Ref 1](assets/match_ref1.png) |
-| **6 Regions (8 Lobes)** | ![Match Ref 2](assets/match_ref2.png) |
-| **8 Regions (10 Lobes)** | ![Match Ref 3](assets/match_ref3.png) |
+| **8 Regions (7 Lobes)** | <img src="./assets/match_ref1.png" alt="Match Ref 1" width="100%"> |
+| **6 Regions (8 Lobes)** | <img src="./assets/match_ref2.png" alt="Match Ref 2" width="100%"> |
+| **8 Regions (10 Lobes)** | <img src="./assets/match_ref3.png" alt="Match Ref 3" width="100%"> |
 
 ```bash
 python3 stimulus_generator.py --num_regions 8 --num_lobes 7 --sublobe_prob 0.5 --output assets/match_ref1.png
@@ -138,7 +138,7 @@ python3 stimulus_generator.py --num_regions 8 --num_lobes 7 --sublobe_prob 0.5 -
 ### 2. Binary Black & White Displays (Experiment 1)
 Alternating black (convex) and white (concave) region fills used to test concatenation effects across 2, 4, 6, and 8 regions.
 
-![Binary Black and White](assets/exp1_binary_black_white.png)
+<img src="./assets/exp1_binary_black_white.png" alt="Binary Black and White" width="100%">
 
 ```bash
 python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode binary --output assets/exp1_binary_black_white.png
@@ -149,7 +149,7 @@ python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode binary -
 ### 3. Multicolored Heterogeneous Displays (Experiment 2)
 Displays where each region is painted a distinct color to test whether convexity effects persist when regions of the same type are heterogeneous.
 
-![Multicolored Heterogeneous](assets/exp2_multicolored_heterogeneous.png)
+<img src="./assets/exp2_multicolored_heterogeneous.png" alt="Multicolored Heterogeneous" width="100%">
 
 ```bash
 python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode colored \
@@ -163,7 +163,7 @@ python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode colored 
 ### 4. Homogeneous Displays (Experiment 3)
 Displays where target regions (e.g. convex or concave) are homogeneously colored gray while intervening regions are painted heterogeneous contrasting colors.
 
-![Homogeneous Gray Convex](assets/exp3a_homogeneous_convex.png)
+<img src="./assets/exp3a_homogeneous_convex.png" alt="Homogeneous Gray Convex" width="100%">
 
 ```bash
 python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode homogeneous \
@@ -177,7 +177,7 @@ python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode homogene
 ### 5. Closed Shapes with Top/Bottom Capping Splines
 When `--closure closed` is specified, an odd number of regions (e.g., 7) is created, and the target convex regions are enclosed at top and bottom using matching smooth capping splines (`make_cap_arc()`), turning them into standalone closed figures.
 
-![Closed Shapes (7 Regions)](assets/test_closed_7regions.png)
+<img src="./assets/test_closed_7regions.png" alt="Closed Shapes (7 Regions)" width="100%">
 
 ```bash
 python3 stimulus_generator.py --num_regions 7 --num_lobes 6 --closure closed --cap_amplitude 18.0 --output assets/test_closed_7regions.png
@@ -188,7 +188,7 @@ python3 stimulus_generator.py --num_regions 7 --num_lobes 6 --closure closed --c
 ### 6. Variable Region Base Widths
 Varies the overall base width of each region column across the canvas (`width_variability=0.35`).
 
-![Variable Region Base Widths](assets/test_var_width.png)
+<img src="./assets/test_var_width.png" alt="Variable Region Base Widths" width="100%">
 
 ```bash
 python3 stimulus_generator.py --num_regions 8 --num_lobes 7 --width_variability 0.35 --output assets/test_var_width.png
@@ -199,7 +199,7 @@ python3 stimulus_generator.py --num_regions 8 --num_lobes 7 --width_variability 
 ### 7. Intra-Region Width Variation & Spine Wobble
 Varies the width **throughout a single region** from top to bottom by applying lateral spine drift (`spine_wobble=15.0`), lobe amplitude variation (`amplitude_variability=0.4`), and vertical lobe height variation (`lobe_height_variability=0.3`).
 
-![Intra-Region Width Variation](assets/test_intra_region_wobble.png)
+<img src="./assets/test_intra_region_wobble.png" alt="Intra-Region Width Variation" width="100%">
 
 ```bash
 python3 stimulus_generator.py --num_regions 8 --num_lobes 7 \

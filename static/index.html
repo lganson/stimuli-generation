@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figure-Ground Stimulus Generator Studio</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-title">
+        <h1>Stimulus Generator</h1>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-import-cmd" class="btn btn-secondary" title="Load parameters from a CLI command string">
+        <span class="icon"></span> Import Command
+      </button>
+      <button id="btn-export-cmd" class="btn btn-secondary" title="Export settings to a text file">
+        <span class="icon"></span> Export Commands File
+      </button>
+      <button id="btn-open-batch" class="btn btn-primary" title="Generate a batch of stimuli images">
+        <span class="icon"></span> Batch Generate
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <main class="app-container">
+    
+    <!-- LEFT PANEL: CONTROL SETTINGS SIDEBAR -->
+    <aside class="sidebar-panel">
+      <div class="sidebar-header">
+        <h2>Stimulus Parameters</h2>
+        <button id="btn-reset-default" class="btn-text" title="Reset all to defaults">Reset Defaults</button>
+      </div>
+
+      <!-- Quick Presets -->
+      <div class="preset-section card-box">
+        <div class="card-title">Quick Presets</div>
+        <div class="preset-buttons">
+          <button class="btn-preset" data-preset="outline">Outline (Ref 1)</button>
+          <button class="btn-preset" data-preset="binary">Binary B&W (Exp 1)</button>
+          <button class="btn-preset" data-preset="colored">Multicolored (Exp 2)</button>
+          <button class="btn-preset" data-preset="homogeneous">Homogeneous (Exp 3a)</button>
+          <button class="btn-preset" data-preset="closed">Closed Shape</button>
+        </div>
+      </div>
+
+      <!-- Section 1: Geometry & Shape -->
+      <details class="control-group card-box" open>
+        <summary class="group-header">
+          <span class="group-title">1. Geometry & Regions</span>
+        </summary>
+        
+        <div class="control-item">
+          <div class="control-label">
+            <label for="num_regions">Number of Regions</label>
+            <span class="val-badge" id="val-num_regions">8</span>
+          </div>
+          <input type="range" id="num_regions" min="2" max="18" step="1" value="8">
+          <div class="field-hint">Alternating vertical regions across display</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="num_lobes">Number of Lobes</label>
+            <span class="val-badge" id="val-num_lobes">6</span>
+          </div>
+          <input type="range" id="num_lobes" min="1" max="16" step="1" value="6">
+          <div class="field-hint">Wave cycles per edge from top to bottom</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label>Shape Closure Mode</label>
+          </div>
+          <div class="radio-toggle-group">
+            <label class="radio-btn">
+              <input type="radio" name="closure" value="open" checked>
+              <span>Open (Frames)</span>
+            </label>
+            <label class="radio-btn">
+              <input type="radio" name="closure" value="closed">
+              <span>Closed (Caps)</span>
+            </label>
+          </div>
+          <div class="field-hint" id="closure-hint">Closed mode automatically adjusts region count to odd integer</div>
+        </div>
+
+        <div class="control-item" id="cap-amp-wrapper" style="display: none;">
+          <div class="control-label">
+            <label for="cap_amplitude">Cap Bulge Amplitude (px)</label>
+            <span class="val-badge" id="val-cap_amplitude">18.0</span>
+          </div>
+          <input type="range" id="cap_amplitude" min="2" max="40" step="1" value="18">
+        </div>
+      </details>
+
+      <!-- Section 2: Fills & Color Palettes -->
+      <details class="control-group card-box" open>
+        <summary class="group-header">
+          <span class="group-title">2. Fills & Color Palettes</span>
+        </summary>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="fill_mode">Fill Style Mode</label>
+          </div>
+          <select id="fill_mode" class="select-input">
+            <option value="outline">Outline (White background, black lines)</option>
+            <option value="binary">Binary (Alternating Black / White)</option>
+            <option value="colored">Colored / Multicolored Palette</option>
+            <option value="homogeneous">Homogeneous Target</option>
+          </select>
+        </div>
+
+        <div class="control-item" id="target-part-wrapper" style="display: none;">
+          <div class="control-label">
+            <label for="target_part">Target Region Type</label>
+          </div>
+          <select id="target_part" class="select-input">
+            <option value="convex">Convex Regions (Target)</option>
+            <option value="concave">Concave Regions (Target)</option>
+            <option value="both">Both (Target All)</option>
+          </select>
+        </div>
+
+        <!-- Convex Color Palette Manager -->
+        <div class="control-item palette-manager" id="cvx-palette-group">
+          <div class="control-label">
+            <label>Convex Region Palette</label>
+          </div>
+          <div class="color-tags" id="convex-tags-container"></div>
+          <div class="add-color-row">
+            <input type="text" id="input-add-cvx" placeholder="Color name or #HEX (e.g. yellow, #ff5500)">
+            <button id="btn-add-cvx" class="btn-sm">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Concave Color Palette Manager -->
+        <div class="control-item palette-manager" id="cnc-palette-group">
+          <div class="control-label">
+            <label>Concave Region Palette</label>
+          </div>
+          <div class="color-tags" id="concave-tags-container"></div>
+          <div class="add-color-row">
+            <input type="text" id="input-add-cnc" placeholder="Color name or #HEX (e.g. magenta, cyan)">
+            <button id="btn-add-cnc" class="btn-sm">+ Add</button>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="background_color">Canvas Background Color</label>
+          </div>
+          <input type="text" id="background_color" class="text-input" value="white" placeholder="white or #ffffff">
+        </div>
+      </details>
+
+      <!-- Section 3: Lobe Geometry & Variations -->
+      <details class="control-group card-box">
+        <summary class="group-header">
+          <span class="group-title">3. Edge & Lobe Variations</span>
+        </summary>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="amplitude">Lobe Amplitude (px)</label>
+            <span class="val-badge" id="val-amplitude">22</span>
+          </div>
+          <input type="range" id="amplitude" min="5" max="50" step="1" value="22">
+          <div class="field-hint">Peak wave displacement from spine</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="sublobe_prob">Sub-Lobe Probability</label>
+            <span class="val-badge" id="val-sublobe_prob">0.44</span>
+          </div>
+          <input type="range" id="sublobe_prob" min="0.0" max="1.0" step="0.02" value="0.44">
+          <div class="field-hint">Probability of secondary sub-lobe notches</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="spine_wobble">Spine Wobble Drift (px)</label>
+            <span class="val-badge" id="val-spine_wobble">15.0</span>
+          </div>
+          <input type="range" id="spine_wobble" min="0.0" max="40.0" step="1.0" value="15.0">
+          <div class="field-hint">Lateral sinusoidal wobble along vertical y axis</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="width_variability">Region Base Width Var.</label>
+            <span class="val-badge" id="val-width_variability">0.00</span>
+          </div>
+          <input type="range" id="width_variability" min="0.0" max="0.7" step="0.05" value="0.00">
+          <div class="field-hint">Variability of column widths across regions</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="amplitude_variability">Amplitude Variability</label>
+            <span class="val-badge" id="val-amplitude_variability">0.20</span>
+          </div>
+          <input type="range" id="amplitude_variability" min="0.0" max="0.7" step="0.05" value="0.20">
+          <div class="field-hint">Vertical variation in lobe bulge size</div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="lobe_height_variability">Lobe Height Variability</label>
+            <span class="val-badge" id="val-lobe_height_variability">0.00</span>
+          </div>
+          <input type="range" id="lobe_height_variability" min="0.0" max="0.7" step="0.05" value="0.00">
+          <div class="field-hint">Vertical variation in individual lobe heights</div>
+        </div>
+      </details>
+
+      <!-- Section 4: Probe & Canvas Config -->
+      <details class="control-group card-box">
+        <summary class="group-header">
+          <span class="group-title">4. Probe Square & Canvas</span>
+        </summary>
+
+        <div class="control-item">
+          <label class="checkbox-container">
+            <input type="checkbox" id="probe_enabled" checked>
+            <span class="checkbox-label">Enable Red Probe Square</span>
+          </label>
+        </div>
+
+        <div class="control-item" id="probe-details-group">
+          <div class="control-label">
+            <label for="probe_region">Probe Region Index</label>
+            <span class="val-badge" id="val-probe_region">4</span>
+          </div>
+          <input type="range" id="probe_region" min="0" max="17" step="1" value="4">
+          
+          <div class="grid-2col mt-10">
+            <div>
+              <label for="probe_size" class="sm-label">Probe Size (px)</label>
+              <input type="number" id="probe_size" class="text-input" value="16" min="4" max="50">
+            </div>
+            <div>
+              <label for="probe_color" class="sm-label">Probe Color</label>
+              <input type="text" id="probe_color" class="text-input" value="red">
+            </div>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label for="seed">Random Seed</label>
+            <button id="btn-random-seed" class="btn-sm btn-icon">🎲 Randomize</button>
+          </div>
+          <input type="number" id="seed" class="text-input" value="42">
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">
+            <label>Canvas Dimensions (W x H px)</label>
+          </div>
+          <div class="grid-2col">
+            <input type="number" id="width" class="text-input" value="750" placeholder="Width">
+            <input type="number" id="height" class="text-input" value="260" placeholder="Height">
+          </div>
+        </div>
+      </details>
+    </aside>
+
+    <!-- RIGHT PANEL: LIVE PREVIEW & COLLAPSIBLE COMMAND PANEL -->
+    <section class="preview-panel">
+      
+      <!-- Live Preview Canvas Box (Maximized Space) -->
+      <div class="preview-card card-box">
+        <div class="preview-header">
+          <div class="preview-title">
+            <h3>Live Stimulus Preview</h3>
+            <span class="dim-badge" id="preview-dim">750 x 260 px</span>
+          </div>
+          
+          <div class="preview-actions">
+            <label class="auto-refresh-toggle">
+              <input type="checkbox" id="chk-auto-refresh" checked>
+              <span>Auto-refresh on slider drag</span>
+            </label>
+            <button id="btn-refresh-preview" class="btn btn-primary btn-sm">
+              <span class="icon">↻</span> Refresh Preview
+            </button>
+          </div>
+        </div>
+
+        <div class="canvas-viewport" id="viewport-container">
+          <div class="spinner" id="preview-spinner" style="display: none;"></div>
+          <img id="stimulus-img" alt="Stimulus Preview" src="" style="display: none;">
+          <div class="placeholder-text" id="preview-placeholder">Generating stimulus preview...</div>
+        </div>
+      </div>
+
+      <!-- COLLAPSIBLE COMMAND PANEL (Right Side as requested) -->
+      <details class="command-card card-box" id="command-details-panel" open>
+        <summary class="command-header">
+          <div class="command-title-row">
+            <span class="toggle-icon">▶</span>
+            <h3>Generated CLI Command</h3>
+            <span class="tag-badge">CLI Syntax</span>
+          </div>
+          <span class="collapse-hint">Click to expand/collapse</span>
+        </summary>
+
+        <div class="command-content">
+          <div class="code-box-wrapper">
+            <pre><code id="cli-command-box">python3 stimulus_generator.py --num_regions 8 --num_lobes 6 --fill_mode outline</code></pre>
+            <button id="btn-copy-command" class="btn-copy" title="Copy command string to clipboard">
+              📋 Copy Command
+            </button>
+          </div>
+          <div class="command-footer">
+            <span class="footer-note">Paste this command directly in your terminal to reproduce this exact stimulus.</span>
+            <button id="btn-save-cmd-file" class="btn btn-secondary btn-sm">💾 Export to File</button>
+          </div>
+        </div>
+      </details>
+
+    </section>
+  </main>
+
+  <!-- MODAL 1: IMPORT COMMAND MODAL -->
+  <div class="modal-overlay" id="modal-import" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Import CLI Command</h3>
+        <button class="modal-close" id="btn-close-import">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Paste a <code>python3 stimulus_generator.py ...</code> command line string below to load all its parameters into the UI sliders and controls:</p>
+        <textarea id="import-command-text" class="code-textarea" rows="4" placeholder="python3 stimulus_generator.py --num_regions 8 --num_lobes 7 --fill_mode colored --convex_palette yellow orange green blue --seed 101"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-import">Cancel</button>
+        <button class="btn btn-primary" id="btn-apply-import">Load Command into UI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: BATCH GENERATION MODAL -->
+  <div class="modal-overlay" id="modal-batch" style="display: none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>Batch Stimuli Generator</h3>
+        <button class="modal-close" id="btn-close-batch">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Generate a batch of stimulus images using the current parameter settings into a target directory on your computer.</p>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="batch_target_dir">Target Output Directory Path</label>
+            <input type="text" id="batch_target_dir" class="text-input" value="./output_stimuli">
+            <span class="field-hint">Folder where generated PNG images & commands_log.txt will be saved</span>
+          </div>
+
+          <div class="form-group">
+            <label for="batch_count">Number of Stimuli to Generate</label>
+            <input type="number" id="batch_count" class="text-input" value="10" min="1" max="1000">
+          </div>
+
+          <div class="form-group">
+            <label for="batch_prefix">File Name Prefix</label>
+            <input type="text" id="batch_prefix" class="text-input" value="stimulus">
+          </div>
+
+          <div class="form-group">
+            <label>Random Seed Strategy</label>
+            <div class="radio-toggle-group">
+              <label class="radio-btn">
+                <input type="radio" name="batch_seed_mode" value="sequential" checked>
+                <span>Sequential (Base + 0, 1, 2...)</span>
+              </label>
+              <label class="radio-btn">
+                <input type="radio" name="batch_seed_mode" value="random">
+                <span>Randomized Seeds</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="batch-status-box" id="batch-status-box" style="display: none;">
+          <div class="status-title" id="batch-status-title">Generating...</div>
+          <div class="status-msg" id="batch-status-msg">Processing batch stimuli images...</div>
+          <pre id="batch-log-output" class="log-output"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-batch">Close</button>
+        <button class="btn btn-primary" id="btn-start-batch">🚀 Start Batch Generation</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
